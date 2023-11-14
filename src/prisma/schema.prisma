@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum LoginType {
+  EMAIL_PASSWORD
+  GITHUB
+  GOOGLE
+}
+
+enum UserRole {
+  USER
+  SELLER
+  ADMIN
+  SUPERADMIN
+}
+
+model Profile {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  user_id      String    @db.ObjectId
+  firstname    String?   @default("")
+  lastname     String?   @default("")
+  country_code String?   @default("")
+  country      String?
+  phone_number String?   @default("")
+  dob          DateTime?
+  address1     String?
+  address2     String?
+  city         String?
+  state        String?
+  postalcode   Int?
+  avatar       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model User {
+  id                     String    @id @default(auto()) @map("_id") @db.ObjectId
+  username               String?   @unique
+  avtar                  String?   @default("https://via.placeholder.com/200x200.png")
+  email                  String    @unique
+  role                   UserRole  @default(USER)
+  password               String
+  is_email_verified      Boolean?  @default(false)
+  login_type             LoginType @default(EMAIL_PASSWORD)
+  provider               String?
+  providerAccountId      String?   @map("provider_account_id")
+  refresh_token          String?   @db.String
+  access_token           String?   @db.String
+  email_verify_token     String?
+  email_verify_expiry    DateTime?
+  forgot_password_token  String?
+  forgot_password_expiry DateTime?
+  magic_link_token       String?
+  magic_link_expiry      DateTime?
+  profile                Profile[]
+
+  @@map("users")
+}
